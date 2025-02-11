@@ -1,8 +1,29 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Brain, Heart, Timer, Waves, ArrowUp, ArrowDown, PlayCircle } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import {
+  Brain,
+  Heart,
+  Timer,
+  Waves,
+  ArrowUp,
+  ArrowDown,
+  PlayCircle,
+} from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Tooltip,
+} from "recharts";
 
 const mockStressData = [
   { day: "Mon", level: 65 },
@@ -19,20 +40,20 @@ const quickExercises = [
     title: "Breathing Exercise",
     duration: "2 min",
     icon: Waves,
-    color: "text-blue-500"
+    color: "text-blue-500",
   },
   {
     title: "Quick Meditation",
     duration: "5 min",
     icon: Brain,
-    color: "text-purple-500"
+    color: "text-purple-500",
   },
   {
     title: "Desk Stretch",
     duration: "3 min",
     icon: Heart,
-    color: "text-rose-500"
-  }
+    color: "text-rose-500",
+  },
 ];
 
 export default function DashboardPage() {
@@ -41,7 +62,9 @@ export default function DashboardPage() {
       {/* Welcome Section */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Welcome back, John</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Welcome back, John
+          </h1>
           <p className="text-muted-foreground">
             Track your stress levels and maintain workplace wellness
           </p>
@@ -92,9 +115,7 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Streak
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Streak</CardTitle>
             <Waves className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
@@ -104,9 +125,7 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Time Spent
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Time Spent</CardTitle>
             <Timer className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
@@ -121,7 +140,9 @@ export default function DashboardPage() {
         <Card className="md:col-span-4">
           <CardHeader>
             <CardTitle>Stress Level Trends</CardTitle>
-            <CardDescription>Your stress levels over the past week</CardDescription>
+            <CardDescription>
+              Your stress levels over the past week
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[200px]">
@@ -130,10 +151,10 @@ export default function DashboardPage() {
                   <XAxis dataKey="day" />
                   <YAxis />
                   <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="level" 
-                    stroke="#9333ea" 
+                  <Line
+                    type="monotone"
+                    dataKey="level"
+                    stroke="#9333ea"
                     strokeWidth={2}
                     dot={{ fill: "#9333ea" }}
                   />
@@ -168,7 +189,8 @@ export default function DashboardPage() {
                     </div>
                     <PlayCircle className="h-5 w-5 text-purple-600" />
                   </div>
-                ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
@@ -177,12 +199,15 @@ export default function DashboardPage() {
       {/* Daily Tip */}
       <Card className="bg-purple-50 dark:bg-purple-950/20 border-purple-100 dark:border-purple-900">
         <CardHeader>
-          <CardTitle className="text-purple-700 dark:text-purple-300">Today's Wellness Tip</CardTitle>
+          <CardTitle className="text-purple-700 dark:text-purple-300">
+            Today&apos;s Wellness Tip
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-purple-600 dark:text-purple-400">
-            Try the "5-4-3-2-1" grounding technique: Name 5 things you can see, 4 things you can touch, 
-            3 things you can hear, 2 things you can smell, and 1 thing you can taste.
+            Try the &quot;5-4-3-2-1&quot; grounding technique: Name 5 things you can see,
+            4 things you can touch, 3 things you can hear, 2 things you can
+            smell, and 1 thing you can taste.
           </p>
         </CardContent>
       </Card>
