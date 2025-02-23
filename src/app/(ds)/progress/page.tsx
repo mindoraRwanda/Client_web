@@ -45,7 +45,7 @@ export default function ProgressPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Your Progress</h1>
           <p className="text-muted-foreground">
-            See how far you've come in managing your stress and enhancing your well-being.
+            See how far you&apos;ve come in managing your stress and enhancing your well-being.
           </p>
         </div>
         <Button className="bg-purple-600 hover:bg-purple-700">
