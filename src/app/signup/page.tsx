@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Brain, Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
+import router from 'next/router';
 
 
 const SignupPage = () => {
@@ -13,8 +14,8 @@ const SignupPage = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Add signup logic here
-    setTimeout(() => setIsLoading(false), 1500);
+    router.push('/dashboard');
+    //setTimeout(() => setIsLoading(false), 1500);
   };
 
   return (

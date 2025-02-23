@@ -19,7 +19,7 @@ import {
 const daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1);
 
 // Dummy events data for select days
-const eventsData = {
+const eventsData: { [key: number]: { id: number; title: string; time: string; }[] } = {
   10: [
     { id: 1, title: "Morning Meditation", time: "8:00 AM" },
     { id: 2, title: "Yoga Session", time: "5:00 PM" },
@@ -150,7 +150,7 @@ export default function CalendarPage() {
           <p className="text-purple-600 dark:text-purple-400">
             Beyond just scheduling, take a moment each day to reflect on your
             feelings or set a personal goal. Consider jotting down one thing
-            you're grateful for or a thought for the day.
+            you&apos;re grateful for or a thought for the day.
           </p>
           <Button variant="outline" size="sm" className="mt-3">
             Write Reflection
