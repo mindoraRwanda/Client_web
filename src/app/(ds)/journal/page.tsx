@@ -3,6 +3,8 @@ import React, { JSX, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Heart, Brain, Target, Shield, Leaf, Book, Mountain, Sun, Puzzle } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Progress } from "@/components/ui/progress";
 
 interface Exercise {
   id: number;
@@ -161,49 +163,104 @@ export default function ReflectionJournal() {
     setShowReport(false);
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white p-6">
+   return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 p-6">
       <div className="max-w-6xl mx-auto">
-        <header className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Inner Journey</h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+        <header className="text-center mb-12 animate-fade-in">
+          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-pink-600 mb-4">
+            Inner Journey
+          </h1>
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             Welcome to your sacred space for self-discovery and growth.
           </p>
         </header>
-        
+
         {!selectedExercise ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {exerciseData.map((exercise) => (
-              <Card key={exercise.id} onClick={() => setSelectedExercise(exercise)}>
-                <CardHeader>{exercise.icon}<CardTitle>{exercise.title}</CardTitle></CardHeader>
-                <CardContent><p>{exercise.description}</p></CardContent>
+              <Card 
+                key={exercise.id}
+                onClick={() => setSelectedExercise(exercise)}
+                className={`${exercise.theme} cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg duration-300 group border-0`}
+              >
+                <CardHeader className="flex flex-row items-center space-y-0 space-x-4">
+                  <div className="p-3 rounded-lg bg-white/50 group-hover:bg-white/80 transition-colors">
+                    {exercise.icon}
+                  </div>
+                  <CardTitle className="text-lg font-semibold text-slate-800">
+                    {exercise.title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-slate-600 text-sm leading-relaxed">
+                    {exercise.description}
+                  </p>
+                </CardContent>
               </Card>
             ))}
           </div>
         ) : showReport ? (
-          <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md text-center">
-            <h2 className="text-2xl font-bold text-gray-800">Reflection Report</h2>
-            <ul className="text-left mt-4">
+          <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg animate-pop-in">
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-slate-800 mb-2">
+                {selectedExercise.title} Report
+              </h2>
+              <p className="text-slate-500">Your reflection journey</p>
+            </div>
+            <ul className="space-y-6">
               {selectedExercise.questions.map((question, index) => (
-                <li key={index} className="mb-2">
-                  <strong>{question}</strong>
-                  <p className="text-gray-600">{answers[index]}</p>
+                <li key={index} className="border-l-4 border-purple-600 pl-4">
+                  <h3 className="font-medium text-slate-700 mb-2">{question}</h3>
+                  <p className="text-slate-600 bg-slate-50 rounded-lg p-3 text-sm">
+                    {answers[index] || "No answer provided"}
+                  </p>
                 </li>
               ))}
             </ul>
-            <Button onClick={restartExercise} className="mt-4">Try Another Exercise</Button>
+            <Button 
+              onClick={restartExercise}
+              className="w-full mt-8 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+            >
+              Start New Journey
+            </Button>
           </div>
         ) : (
-          <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md text-center">
-            <h2 className="text-2xl font-bold text-gray-800">{selectedExercise.title}</h2>
-            <p className="text-gray-600">{selectedExercise.questions[currentQuestionIndex]}</p>
-            <textarea 
-              className="w-full p-2 border rounded mt-4" 
-              value={userAnswer} 
-              onChange={(e) => setUserAnswer(e.target.value)}
-              placeholder="Type your answer here..."
-            />
-            <Button onClick={handleNext} className="mt-4">{currentQuestionIndex < selectedExercise.questions.length - 1 ? "Next" : "Finish"}</Button>
+          <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg animate-pop-in">
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg mb-4">
+                {selectedExercise.icon}
+              </div>
+              <h2 className="text-2xl font-bold text-slate-800 mb-2">
+                {selectedExercise.title}
+              </h2>
+              <Progress 
+                value={(currentQuestionIndex + 1) / selectedExercise.questions.length * 100} 
+                className="h-2 bg-slate-100"
+              />
+              <p className="text-sm text-slate-500 mt-2">
+                Question {currentQuestionIndex + 1} of {selectedExercise.questions.length}
+              </p>
+            </div>
+            
+            <div className="space-y-6">
+              <p className="text-lg text-slate-700 font-medium text-center">
+                {selectedExercise.questions[currentQuestionIndex]}
+              </p>
+              <Textarea
+                value={userAnswer}
+                onChange={(e) => setUserAnswer(e.target.value)}
+                placeholder="Write your thoughts here..."
+                className="min-h-[150px] text-lg focus-visible:ring-purple-500 border-slate-200"
+              />
+              <Button 
+                onClick={handleNext}
+                disabled={!userAnswer.trim()}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white disabled:opacity-50 transition-opacity"
+              >
+                {currentQuestionIndex < selectedExercise.questions.length - 1 ? 
+                  "Continue Journey" : "Complete Reflection"}
+              </Button>
+            </div>
           </div>
         )}
       </div>
