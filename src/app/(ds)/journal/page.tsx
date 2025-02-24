@@ -1,10 +1,19 @@
 'use client'
-import React, { useState } from 'react';
+import React, { JSX, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Heart, Brain, Target, Shield, Leaf, Book, Mountain, Sun, Puzzle } from "lucide-react";
 
-const exerciseData = [
+interface Exercise {
+  id: number;
+  title: string;
+  icon: JSX.Element;
+  description: string;
+  theme: string;
+  questions: string[];
+}
+
+const exerciseData: Exercise[] = [
   {
     id: 1,
     title: "Unmasking Your Authentic Self",
@@ -128,7 +137,7 @@ const exerciseData = [
 ];
 
 export default function ReflectionJournal() {
-  const [selectedExercise, setSelectedExercise] = useState<typeof exerciseData[0] | null>(null);
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [userAnswer, setUserAnswer] = useState("");
