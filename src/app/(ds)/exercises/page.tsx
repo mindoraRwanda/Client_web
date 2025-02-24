@@ -1,25 +1,10 @@
-"use client";
-
+'use client'
 import React, { useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Waves, 
-  Brain, 
-  Heart, 
-  PlayCircle, 
-  PauseCircle, 
-  Moon, 
-  Music, 
-  ActivitySquare,
-  X
-} from "lucide-react";
-
+import { Waves, Brain, Heart, PlayCircle, PauseCircle, Moon, Music, ActivitySquare, X, Search } from "lucide-react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 // Make sure all icons are available in lucide-react
 const exerciseCategories = [
   { id: 'breathing', name: 'Breathing', icon: Waves, color: 'text-blue-500' },
@@ -208,44 +193,62 @@ const ExercisePlayer: React.FC<{ exercise: Exercise; onClose: () => void }> = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  return (
-    <Card className={`${exercise.bgClass} border ${exercise.borderClass}`}>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>{exercise.title}</span>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-4 w-4" />
+ return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative rounded-2xl shadow-xl overflow-hidden"
+    >
+      <div className={`absolute inset-0 bg-gradient-to-br ${exercise.color.replace('text', 'from')}/20 to-white/50`} />
+      <Card className="relative bg-background/80 backdrop-blur-sm border-0">
+        <CardHeader className="flex flex-row items-center justify-between px-6 pt-6 pb-4">
+          <CardTitle className="text-2xl font-bold">{exercise.title}</CardTitle>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onClose}
+            className="rounded-full hover:bg-accent/50"
+          >
+            <X className="h-5 w-5" />
           </Button>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="text-center">
-          <div className="text-3xl font-bold mb-2">{formatTime(timeLeft)}</div>
-          <div className="flex justify-center space-x-2">
+        </CardHeader>
+        <CardContent className="space-y-6 px-6 pb-6">
+          <div className="text-center space-y-4">
+            <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+              {formatTime(timeLeft)}
+            </div>
             <Button
               variant="outline"
-              size="sm"
+              size="lg"
               onClick={() => setIsPlaying(!isPlaying)}
+              className="rounded-full h-14 w-14 shadow-lg bg-background/80 backdrop-blur-sm"
             >
               {isPlaying ? 
-                <PauseCircle className="h-4 w-4" /> : 
-                <PlayCircle className="h-4 w-4" />
+                <PauseCircle className="h-6 w-6" /> : 
+                <PlayCircle className="h-6 w-6" />
               }
             </Button>
           </div>
-        </div>
-        <div className="space-y-2">
-          <p className="font-medium">Current Step:</p>
-          <p className="text-lg">{exercise.steps[currentStep]}</p>
-          <div className="w-full bg-white rounded-full h-2">
-            <div 
-              className="bg-purple-600 h-2 rounded-full transition-all"
-              style={{ width: `${(currentStep + 1) * 20}%` }}
-            />
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-sm font-medium">
+              <span>Current Step</span>
+              <span>{currentStep + 1}/{exercise.steps.length}</span>
+            </div>
+            <div className="relative h-3 rounded-full bg-accent overflow-hidden">
+              <motion.div 
+                className="absolute left-0 top-0 h-full bg-gradient-to-r from-purple-500 to-pink-500"
+                initial={{ width: 0 }}
+                animate={{ width: `${(currentStep + 1) * 20}%` }}
+                transition={{ duration: 0.5 }}
+              />
+            </div>
+            <p className="text-lg font-medium text-center">
+              {exercise.steps[currentStep]}
+            </p>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 };
 
@@ -261,7 +264,7 @@ const ExercisesPage = () => {
   );
 
   return (
-    <div className="space-y-6 p-4">
+    <div className="space-y-8 p-4 max-w-7xl mx-auto">
       {activeExercise ? (
         <ExercisePlayer 
           exercise={activeExercise} 
@@ -270,83 +273,120 @@ const ExercisesPage = () => {
       ) : (
         <>
           {/* Page Header */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">
-                Explore Exercises
-              </h1>
-              <p className="text-muted-foreground">
-                Enhance your well-being with guided practices
-              </p>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-4"
+          >
+            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+              <div className="space-y-2">
+                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+                  Wellness Toolkit
+                </h1>
+                <p className="text-muted-foreground text-lg">
+                  Curated practices for mental clarity and physical well-being
+                </p>
+              </div>
+              <div className="relative w-full md:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Search practices..."
+                  className="w-full pl-9 pr-4 py-2 rounded-full border bg-background focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
             </div>
-            <input
-              type="text"
-              placeholder="Search exercises..."
-              className="mt-4 md:mt-0 p-2 border rounded-md"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
 
-          {/* Categories */}
-          <div className="flex space-x-2 overflow-x-auto pb-2">
-            <Button
-              variant={selectedCategory === 'all' ? 'default' : 'outline'}
-              onClick={() => setSelectedCategory('all')}
-              className="whitespace-nowrap"
-            >
-              All Exercises
-            </Button>
-            {exerciseCategories.map(category => (
-              <Button
-                key={category.id}
-                variant={selectedCategory === category.id ? 'default' : 'outline'}
-                onClick={() => setSelectedCategory(category.id)}
-                className="whitespace-nowrap"
-              >
-                <category.icon className={`h-4 w-4 mr-2 ${category.color}`} />
-                {category.name}
-              </Button>
-            ))}
-          </div>
+            {/* Categories */}
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              <motion.div whileTap={{ scale: 0.95 }}>
+                <Button
+                  variant={selectedCategory === 'all' ? 'default' : 'outline'}
+                  onClick={() => setSelectedCategory('all')}
+                  className={cn(
+                    "rounded-full gap-2",
+                    selectedCategory === 'all' && 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
+                  )}
+                >
+                  All Practices
+                </Button>
+              </motion.div>
+              {exerciseCategories.map(category => (
+                <motion.div key={category.id} whileHover={{ scale: 1.05 }}>
+                  <Button
+                    variant={selectedCategory === category.id ? 'default' : 'outline'}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={cn(
+                      "rounded-full gap-2",
+                      selectedCategory === category.id && `bg-gradient-to-r ${category.color.replace('text', 'from')} to-${category.color.split('-')[1]}-300 text-white`
+                    )}
+                  >
+                    <category.icon className="h-4 w-4" />
+                    {category.name}
+                  </Button>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
 
           {/* Exercise Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <motion.div 
+            layout
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          >
             {filteredExercises.map((exercise) => {
               const Icon = exercise.icon;
               return (
-                <Card
+                <motion.div 
                   key={exercise.id}
-                  className={`${exercise.bgClass} border ${exercise.borderClass}`}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  <CardHeader className="flex items-center justify-between pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      {exercise.title}
-                    </CardTitle>
-                    <Icon className={`h-5 w-5 ${exercise.color}`} />
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                      {exercise.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">
-                        {exercise.duration}
-                      </span>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setActiveExercise(exercise)}
-                      >
-                        <PlayCircle className="h-4 w-4 mr-1" />
-                        Start
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                  <Card
+                    className={cn(
+                      "group relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-shadow",
+                      exercise.bgClass
+                    )}
+                  >
+                    <div className={`absolute inset-0 bg-gradient-to-br ${exercise.color}/20 opacity-0 group-hover:opacity-100 transition-opacity`} />
+                    <CardHeader className="flex flex-row items-start justify-between pb-2">
+                      <CardTitle className="text-lg font-semibold">
+                        {exercise.title}
+                      </CardTitle>
+                      <div className={`p-2 rounded-lg ${exercise.bgClass}`}>
+                        <Icon className={`h-5 w-5 ${exercise.color}`} />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-muted-foreground text-sm">
+                        {exercise.description}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium px-3 py-1 rounded-full bg-accent">
+                          {exercise.duration}
+                        </span>
+                        <motion.div whileHover={{ scale: 1.05 }}>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setActiveExercise(exercise)}
+                            className="rounded-full gap-1 bg-background/80 backdrop-blur-sm"
+                          >
+                            <PlayCircle className="h-4 w-4" />
+                            Start
+                          </Button>
+                        </motion.div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </>
       )}
     </div>
