@@ -1,16 +1,18 @@
 'use client'
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Brain, Mail, Lock, Loader2, Orbit, Leaf, Waves } from "lucide-react";
+import { Brain, Mail, Lock, Loader2, Orbit, Leaf, Waves, AlertCircle } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 const LoginPage = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -19,11 +21,45 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate login API call
-    setTimeout(() => {
+    setError(null);
+    
+    try {
+      // Make the login API request using axios
+      const response = await axios.post(
+        'https://mindora-backend-beta-version-m0bk.onrender.com/api/auth/login', 
+        {
+          email: formData.email,
+          password: formData.password
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+      
+      // Login successful
+      console.log('User logged in successfully:', response.data);
+      
+      // Store the token in localStorage or a secure cookie
+      if (response.data.token) {
+        localStorage.setItem('mindora_token', response.data.token);
+        // You might want to use a more secure approach like httpOnly cookies
+      }
+      
+      // Redirect to dashboard
       router.push('/dashboard');
+    } catch (err) {
+      console.error('Login error:', err);
+      // Handle axios error
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Invalid email or password');
+      } else {
+        setError('An unknown error occurred');
+      }
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -59,6 +95,12 @@ const LoginPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-md border border-red-200 text-sm flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="email" className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
