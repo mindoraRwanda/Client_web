@@ -1,6 +1,6 @@
 'use client';
 
-import { Brain, Menu, Settings, LogOut, Home, Brain as BrainIcon, BookOpen, BarChart, Calendar } from "lucide-react";
+import { Brain, Menu, LogOut, Home, Brain as BrainIcon, BookOpen, BarChart, Calendar, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
@@ -47,6 +47,18 @@ export function MobileHeader() {
                 >
                   <Home className="h-5 w-5" />
                   <span>Dashboard</span>
+                </Link>
+                <Link
+                  href="/assesments"
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
+                    pathname === "/assesments"
+                      ? "bg-purple-50 text-purple-600 dark:bg-slate-800 dark:text-purple-400"
+                      : "text-slate-600 hover:bg-purple-50 hover:text-purple-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-purple-400"
+                  )}
+                >
+                  <Zap className="h-5 w-5" />
+                  <span>Assessment</span>
                 </Link>
                 <Link
                   href="/exercises"
@@ -99,12 +111,6 @@ export function MobileHeader() {
               </nav>
 
               <div className="border-t pt-4 mt-4">
-                <Link href="/settings">
-                  <Button variant="ghost" className="w-full justify-start gap-2">
-                    <Settings className="h-5 w-5" />
-                    <span>Settings</span>
-                  </Button>
-                </Link>
                 <Button variant="ghost" className="w-full justify-start gap-2 text-red-600 dark:text-red-400">
                   <LogOut className="h-5 w-5" />
                   <span>Log out</span>

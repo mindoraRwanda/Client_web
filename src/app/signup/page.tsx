@@ -1,22 +1,26 @@
 'use client'
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Brain, Lock, User, ArrowRight, Loader2, Image, Smile } from "lucide-react";
+import { Brain, Lock, User, ArrowRight, Loader2, Image, Smile, Mail } from "lucide-react";
 import { useRouter } from 'next/navigation';
 
 const SignupPage = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     username: '',
+    email: '',
     password: '',
-    profileImage: ''
+    phoneNumber: '',
+    profile: ''
   });
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,7 +29,7 @@ const SignupPage = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfilePreview(reader.result as string);
-        setFormData(prev => ({ ...prev, profileImage: reader.result as string }));
+        setFormData(prev => ({ ...prev, profile: reader.result as string }));
       };
       reader.readAsDataURL(file);
     }
@@ -34,11 +38,45 @@ const SignupPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+    setError(null);
+    
+    try {
+      // Prepare the form data according to API requirements
+      const apiData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        username: formData.username,
+        phoneNumber: '', // Send empty value as specified
+        profile: '', // Send empty value as specified
+        password: formData.password
+      };
+      
+      // Make the API request using axios
+      const response = await axios.post(
+        'https://mindora-backend-beta-version-m0bk.onrender.com/api/auth/register', 
+        apiData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+      
+      // Registration successful
+      console.log('User registered successfully:', response.data);
       router.push('/dashboard');
+    } catch (err) {
+      console.error('Registration error:', err);
+      // Handle axios error
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Failed to register user');
+      } else {
+        setError('An unknown error occurred');
+      }
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -67,6 +105,11 @@ const SignupPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-md border border-red-200 text-sm">
+                {error}
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Profile Image Upload */}
               <div className="flex justify-center">
@@ -116,6 +159,21 @@ const SignupPage = () => {
                     required
                   />
                 </div>
+              </div>
+
+              {/* Email Field - Added as required by API */}
+              <div className="space-y-2">
+                <Label htmlFor="email" className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
+                  <Mail className="w-4 h-4" /> Email
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="john.doe@example.com"
+                  required
+                />
               </div>
 
               {/* Username Field */}
