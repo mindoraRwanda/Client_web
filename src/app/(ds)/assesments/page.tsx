@@ -7,8 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Brain, Battery, HeartPulse, Zap, Activity, ArrowLeft, ArrowRight, Info, PlusCircle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { motion } from 'framer-motion';
-
-// Assessment data structure
 interface AssessmentSection {
   id: string;
   title: string;
@@ -233,7 +231,7 @@ export default function BurnoutAssessmentPage() {
               <div className="relative">
                 <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 opacity-75 blur"></div>
                 <div className="relative p-4 bg-white rounded-full">
-                  <Brain className="w-12 h-12 text-purple-600" />
+                  <Zap className="w-12 h-12 text-purple-600" />
                 </div>
               </div>
             </motion.div>

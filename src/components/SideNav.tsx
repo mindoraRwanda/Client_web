@@ -11,7 +11,8 @@ import {
   Settings,
   LogOut,
   User,
-  Home
+  Home,
+  Zap
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -24,6 +25,7 @@ import { Button } from "@/components/ui/button";
 
 const navigationItems = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
+  { name: 'Assessment', href: '/assesments', icon: Zap },
   { name: 'Exercises', href: '/exercises', icon: Brain },
   { name: 'Journal', href: '/journal', icon: BookOpen },
   { name: 'Progress', href: '/progress', icon: BarChart },
