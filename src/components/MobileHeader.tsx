@@ -5,10 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+
+
 
 export function MobileHeader() {
   const pathname = usePathname();
+  const router = useRouter();
+
+
+  const handleLogout = () => {
+    localStorage.removeItem('mindora_token');
+    localStorage.removeItem('mindora_user');
+    localStorage.removeItem('mindora_user_profile');
+    router.push('/login');
+  };
+
 
   return (
     <header className="lg:hidden border-b bg-white dark:bg-slate-900 sticky top-0 z-50">
@@ -111,7 +123,9 @@ export function MobileHeader() {
               </nav>
 
               <div className="border-t pt-4 mt-4">
-                <Button variant="ghost" className="w-full justify-start gap-2 text-red-600 dark:text-red-400">
+                <Button variant="ghost"
+                  onClick={handleLogout}
+                 className="w-full justify-start gap-2 text-red-600 dark:text-red-400">
                   <LogOut className="h-5 w-5" />
                   <span>Log out</span>
                 </Button>
