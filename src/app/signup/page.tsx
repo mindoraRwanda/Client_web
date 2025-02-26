@@ -8,6 +8,16 @@ import { Label } from "@/components/ui/label";
 import { Brain, Lock, User, ArrowRight, Loader2, Image, Smile, Mail } from "lucide-react";
 import { useRouter } from 'next/navigation';
 
+// Define UserData interface for TypeScript type checking
+interface UserData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  username: string;
+  profile: string;
+  id: string;
+}
+
 const SignupPage = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -65,6 +75,44 @@ const SignupPage = () => {
       
       // Registration successful
       console.log('User registered successfully:', response.data);
+      
+      // Store the token in localStorage
+      if (response.data.token) {
+        localStorage.setItem('mindora_token', response.data.token);
+        
+        // Extract and store user data from token
+        try {
+          const tokenParts = response.data.token.split('.');
+          if (tokenParts.length === 3) {
+            const payload = JSON.parse(atob(tokenParts[1]));
+            
+            // Create user data object
+            const userData: UserData = {
+              firstName: payload.firstName || formData.firstName,
+              lastName: payload.lastName || formData.lastName,
+              email: payload.email || formData.email,
+              username: payload.username || formData.username,
+              profile: payload.profile || '',
+              id: payload.id || payload.sub || ''
+            };
+            
+            // Store user data in localStorage
+            localStorage.setItem('mindora_user', JSON.stringify(userData));
+          }
+        } catch (error) {
+          console.error('Error parsing token:', error);
+        }
+        
+        // Also store the entire user object if it exists in response
+        if (response.data.user) {
+          localStorage.setItem('mindora_user', JSON.stringify(response.data.user));
+        }
+      }
+      
+      // Fetch user profile data
+      await fetchUserProfile(response.data.token);
+      
+      // Redirect to dashboard
       router.push('/dashboard');
     } catch (err) {
       console.error('Registration error:', err);
@@ -76,6 +124,29 @@ const SignupPage = () => {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+  
+  // Function to fetch additional user profile data
+  const fetchUserProfile = async (token: string) => {
+    try {
+      const response = await axios.get(
+        'https://mindora-backend-beta-version-m0bk.onrender.com/api/users/profile', 
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (response.data) {
+        // Store complete user profile data
+        localStorage.setItem('mindora_user_profile', JSON.stringify(response.data));
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      // Continue even if profile fetch fails
     }
   };
 
