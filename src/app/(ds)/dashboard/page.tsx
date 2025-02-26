@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -10,6 +10,15 @@ import { motion, AnimatePresence } from "framer-motion";
 // Animated components
 const AnimatedCard = motion(Card);
 const AnimatedButton = motion(Button);
+
+interface UserData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  username: string;
+  profile?: string;
+  id: string;
+}
 
 // Enhanced mock data with more data points
 const mockStressData = [
@@ -109,6 +118,37 @@ export default function DashboardPage() {
   const [temperature, setTemperature] = useState(2.8);
   const [showTip, setShowTip] = useState(true);
   const [dailyTip] = useState(wellbeingTips[Math.floor(Math.random() * wellbeingTips.length)]);
+  const [userName, setUserName] = useState('User');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(()=>{
+    const fetchUserData = () => {
+      try {
+        // Get token and check if it exists
+        const token = localStorage.getItem('mindora_token');
+        if (!token) {
+          // Redirect to login if no token found
+          window.location.href = '/login';
+          return;
+        }
+
+        // Get user data from localStorage
+        const userDataStr = localStorage.getItem('mindora_user');
+        if (userDataStr) {
+          const userData: UserData = JSON.parse(userDataStr);
+          // Set user's first name for display
+          setUserName(userData.firstName || userData.username || 'User');
+        }
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        setIsLoading(false);
+      }
+    }
+    fetchUserData();  
+
+  }, []);
+
 
   const getTemperatureText = (temp: number) => {
     if (!temp) return "Not measured";
@@ -145,6 +185,17 @@ export default function DashboardPage() {
     return "bg-gradient-to-br from-red-400 to-rose-300";
   };
 
+   if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-purple-50 via-purple-50/50 to-white dark:from-slate-900 dark:via-slate-900/70 dark:to-slate-800">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-t-purple-600 border-b-purple-600 border-l-transparent border-r-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-300">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 p-6 pt-8 bg-gradient-to-b from-purple-50 via-purple-50/50 to-white min-h-screen dark:from-slate-900 dark:via-slate-900/70 dark:to-slate-800">
       <AnimatePresence mode="wait">
@@ -157,7 +208,7 @@ export default function DashboardPage() {
         >
           <div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
-              Welcome back, John
+              Welcome back, {userName}
             </h1>
             <p className="text-muted-foreground mt-2">
               Track your wellness and maintain a healthy work balance
