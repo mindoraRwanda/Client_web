@@ -1,6 +1,6 @@
 'use client';
 
-import { Brain, Menu, LogOut, Home, Brain as BrainIcon, BookOpen, BarChart, Calendar, Zap } from "lucide-react";
+import { Brain, Menu, LogOut, Home, Brain as BrainIcon, BookOpen, BarChart, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Link from "next/link";
@@ -107,18 +107,6 @@ export function MobileHeader() {
                 >
                   <BarChart className="h-5 w-5" />
                   <span>Progress</span>
-                </Link>
-                <Link
-                  href="/calendar"
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-                    pathname === "/calendar"
-                      ? "bg-purple-50 text-purple-600 dark:bg-slate-800 dark:text-purple-400"
-                      : "text-slate-600 hover:bg-purple-50 hover:text-purple-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-purple-400"
-                  )}
-                >
-                  <Calendar className="h-5 w-5" />
-                  <span>Calendar</span>
                 </Link>
               </nav>
 

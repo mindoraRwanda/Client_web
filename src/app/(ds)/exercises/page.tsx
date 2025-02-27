@@ -11,7 +11,7 @@ interface Exercise {
   title: string;
   description: string;
   duration: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  icon: React.ComponentType<LucideProps>;
   color: string;
   bgClass: string;
   borderClass: string;
@@ -23,14 +23,14 @@ interface Exercise {
 
 // Make sure all icons are available in lucide-react
 const exerciseCategories = [
-  { id: 'breathing', name: 'Breathing', icon: (props: React.JSX.IntrinsicAttributes & Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>) => <Waves {...props} />, color: 'text-blue-500' },
-  { id: 'meditation', name: 'Meditation', icon: (props: React.JSX.IntrinsicAttributes & Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>) => <Brain {...props} />, color: 'text-purple-500' },
-  { id: 'movement', name: 'Movement', icon: (props: React.JSX.IntrinsicAttributes & Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>) => <ActivitySquare {...props} />, color: 'text-rose-500' },
-  { id: 'sleep', name: 'Sleep & Rest', icon: (props: React.JSX.IntrinsicAttributes & Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>) => <Moon {...props} />, color: 'text-indigo-500' },
-  { id: 'nature', name: 'Nature Sounds', icon: (props: React.JSX.IntrinsicAttributes & Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>) => <Music {...props} />, color: 'text-green-500' },
+  { id: 'breathing', name: 'Breathing', icon: (props: LucideProps) => <Waves {...props} />, color: 'text-blue-500' },
+  { id: 'meditation', name: 'Meditation', icon: (props: LucideProps) => <Brain {...props} />, color: 'text-purple-500' },
+  { id: 'movement', name: 'Movement', icon: (props: LucideProps) => <ActivitySquare {...props} />, color: 'text-rose-500' },
+  { id: 'sleep', name: 'Sleep & Rest', icon: (props: LucideProps) => <Moon {...props} />, color: 'text-indigo-500' },
+  { id: 'nature', name: 'Nature Sounds', icon: (props: LucideProps) => <Music {...props} />, color: 'text-green-500' },
 ];
 
-const exercises = [
+const exercises: Exercise[] = [
   // Breathing Exercises
   {
     id: 1,
@@ -173,25 +173,27 @@ const exercises = [
 ];
 
 // Calculate total times and validate step timings
-exercises.forEach(exercise => {
+const processedExercises = exercises.map(exercise => {
+  const exerciseCopy = {...exercise};
   // If stepTiming is not provided or total doesn't match duration, create equal step timing
-  const totalSeconds = parseInt(exercise.duration) * 60;
+  const totalSeconds = parseInt(exerciseCopy.duration) * 60;
   
-  if (!exercise.stepTiming || exercise.stepTiming.reduce((a, b) => a + b, 0) !== totalSeconds) {
-    const equalStepTime = Math.floor(totalSeconds / exercise.steps.length);
-    const remainder = totalSeconds % exercise.steps.length;
-    exercise.stepTiming = exercise.steps.map((_, index) => 
+  if (!exerciseCopy.stepTiming || exerciseCopy.stepTiming.reduce((a, b) => a + b, 0) !== totalSeconds) {
+    const equalStepTime = Math.floor(totalSeconds / exerciseCopy.steps.length);
+    const remainder = totalSeconds % exerciseCopy.steps.length;
+    exerciseCopy.stepTiming = exerciseCopy.steps.map((_, index) => 
       index === 0 ? equalStepTime + remainder : equalStepTime
     );
   }
   
-  (exercise as unknown as Exercise).stepTransitions = [];
+  exerciseCopy.stepTransitions = [];
   let cumulativeTime = 0;
-  exercise.stepTiming.forEach(time => {
+  exerciseCopy.stepTiming.forEach(time => {
     cumulativeTime += time;
-    //@ts-expect-error
-    exercise.stepTransitions.push(cumulativeTime);
+    exerciseCopy.stepTransitions?.push(cumulativeTime);
   });
+
+  return exerciseCopy;
 });
 
 const ExercisePlayer = ({ exercise, onClose }: { exercise: Exercise; onClose: () => void }) => {
@@ -202,7 +204,7 @@ const ExercisePlayer = ({ exercise, onClose }: { exercise: Exercise; onClose: ()
   const totalTime = parseInt(exercise.duration) * 60;
 
   useEffect(() => {
-    let timer: string | number | NodeJS.Timeout | undefined;
+    let timer: NodeJS.Timeout | undefined;
     
     if (isPlaying && timeLeft > 0) {
       timer = setInterval(() => {
@@ -212,14 +214,14 @@ const ExercisePlayer = ({ exercise, onClose }: { exercise: Exercise; onClose: ()
           
           // Update current step if needed
           const timeElapsed = totalTime - nextTimeLeft;
-          const nextStep = exercise.stepTransitions?.findIndex((point: number) => timeElapsed < point) ?? -1;
+          const nextStep = exercise.stepTransitions?.findIndex(point => timeElapsed < point) ?? -1;
           const newStep = nextStep === -1 ? exercise.steps.length - 1 : nextStep;
           
           if (newStep !== currentStep) {
             setCurrentStep(newStep);
             setCurrentStepTimeLeft(exercise.stepTiming[newStep]);
           } else {
-            setCurrentStepTimeLeft((prevStepTime: number) => prevStepTime - 1);
+            setCurrentStepTimeLeft(prevStepTime => prevStepTime - 1);
           }
           
           // Handle exercise completion
@@ -234,7 +236,9 @@ const ExercisePlayer = ({ exercise, onClose }: { exercise: Exercise; onClose: ()
       }, 1000);
     }
     
-    return () => clearInterval(timer);
+    return () => {
+      if (timer) clearInterval(timer);
+    };
   }, [isPlaying, currentStep, exercise.stepTransitions, exercise.stepTiming, exercise.steps.length, timeLeft, totalTime]);
 
   const formatTime = (seconds: number) => {
@@ -272,93 +276,93 @@ const ExercisePlayer = ({ exercise, onClose }: { exercise: Exercise; onClose: ()
   };
 
   return (
-      <div className="relative rounded-2xl shadow-xl overflow-hidden animate-fadeIn">
-        <div className={`absolute inset-0 bg-gradient-to-br ${exercise.color.replace('text', 'from')}/20 to-white/50`} />
-        <Card className="relative bg-background/80 backdrop-blur-sm border-0">
-          <CardHeader className="flex flex-row items-center justify-between px-6 pt-6 pb-4">
-            <CardTitle className="text-2xl font-bold">{exercise.title}</CardTitle>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={onClose}
-              className="rounded-full hover:bg-accent/50"
+    <div className="relative rounded-2xl shadow-xl overflow-hidden animate-fadeIn">
+      <div className={`absolute inset-0 bg-gradient-to-br ${exercise.color.replace('text', 'from')}/20 to-white/50`} />
+      <Card className="relative bg-background/80 backdrop-blur-sm border-0">
+        <CardHeader className="flex flex-row items-center justify-between px-6 pt-6 pb-4">
+          <CardTitle className="text-2xl font-bold">{exercise.title}</CardTitle>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onClose}
+            className="rounded-full hover:bg-accent/50"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-6 px-6 pb-6">
+          <div className="text-center space-y-4">
+            <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+              {formatTime(timeLeft)}
+            </div>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => setIsPlaying(!isPlaying)}
+              className="rounded-full h-14 w-14 shadow-lg bg-background/80 backdrop-blur-sm"
             >
-              <X className="h-5 w-5" />
+              {isPlaying ? 
+                <PauseCircle className="h-6 w-6" /> : 
+                <PlayCircle className="h-6 w-6" />
+              }
             </Button>
-          </CardHeader>
-          <CardContent className="space-y-6 px-6 pb-6">
-            <div className="text-center space-y-4">
-              <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
-                {formatTime(timeLeft)}
+          </div>
+          
+          <div className="space-y-4">
+            {/* Overall progress */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm font-medium">
+                <span>Overall Progress</span>
+                <span>{Math.round(totalProgress)}%</span>
               </div>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={() => setIsPlaying(!isPlaying)}
-                className="rounded-full h-14 w-14 shadow-lg bg-background/80 backdrop-blur-sm"
-              >
-                {isPlaying ? 
-                  <PauseCircle className="h-6 w-6" /> : 
-                  <PlayCircle className="h-6 w-6" />
-                }
-              </Button>
+              <div className="relative h-2 rounded-full bg-accent overflow-hidden">
+                <div 
+                  className="absolute left-0 top-0 h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300"
+                  style={{ width: `${totalProgress}%` }}
+                />
+              </div>
             </div>
             
-            <div className="space-y-4">
-              {/* Overall progress */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm font-medium">
-                  <span>Overall Progress</span>
-                  <span>{Math.round(totalProgress)}%</span>
-                </div>
-                <div className="relative h-2 rounded-full bg-accent overflow-hidden">
-                  <div 
-                    className="absolute left-0 top-0 h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300"
-                    style={{ width: `${totalProgress}%` }}
-                  />
-                </div>
-              </div>
-              
-              {/* Current step info */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm font-medium">
-                  <span>Current Step</span>
-                  <span>{currentStep + 1}/{exercise.steps.length}</span>
-                </div>
-                <div className="relative h-2 rounded-full bg-accent overflow-hidden">
-                  <div 
-                    className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-400 to-indigo-500 transition-all duration-300"
-                    style={{ width: `${currentStepProgress}%` }}
-                  />
-                </div>
-              </div>
-              
-              {/* Step timing */}
+            {/* Current step info */}
+            <div className="space-y-2">
               <div className="flex items-center justify-between text-sm font-medium">
-                <span>Step Time Remaining</span>
-                <span>{formatTime(currentStepTimeLeft)}</span>
+                <span>Current Step</span>
+                <span>{currentStep + 1}/{exercise.steps.length}</span>
               </div>
-              
-              {/* Current step display */}
-              <div className="p-6 bg-background/70 backdrop-blur-sm rounded-lg border border-accent/50 shadow-md">
-                <p className="text-lg font-medium text-center">
-                  {exercise.steps[currentStep]}
-                </p>
-              </div>
-              
-              {/* Step indicators */}
-              <div className="flex justify-center space-x-2 pt-2">
-                {exercise.steps.map((_, index) => (
-                  <div 
-                    key={index}
-                    className={`h-2 w-2 rounded-full transition-all duration-300 ${getStepClasses(index)}`}
-                  />
-                ))}
+              <div className="relative h-2 rounded-full bg-accent overflow-hidden">
+                <div 
+                  className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-400 to-indigo-500 transition-all duration-300"
+                  style={{ width: `${currentStepProgress}%` }}
+                />
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            
+            {/* Step timing */}
+            <div className="flex items-center justify-between text-sm font-medium">
+              <span>Step Time Remaining</span>
+              <span>{formatTime(currentStepTimeLeft)}</span>
+            </div>
+            
+            {/* Current step display */}
+            <div className="p-6 bg-background/70 backdrop-blur-sm rounded-lg border border-accent/50 shadow-md">
+              <p className="text-lg font-medium text-center">
+                {exercise.steps[currentStep]}
+              </p>
+            </div>
+            
+            {/* Step indicators */}
+            <div className="flex justify-center space-x-2 pt-2">
+              {exercise.steps.map((_, index) => (
+                <div 
+                  key={index}
+                  className={`h-2 w-2 rounded-full transition-all duration-300 ${getStepClasses(index)}`}
+                />
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
@@ -437,10 +441,10 @@ const CategoryFilter = ({ selectedCategory, setSelectedCategory }: { selectedCat
 
 const ExercisesPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [activeExercise, setActiveExercise] = useState<typeof exercises[0] | null>(null);
+  const [activeExercise, setActiveExercise] = useState<Exercise | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredExercises = exercises.filter(exercise => 
+  const filteredExercises = processedExercises.filter(exercise => 
     (selectedCategory === 'all' || exercise.category === selectedCategory) &&
     (exercise.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
      exercise.description.toLowerCase().includes(searchTerm.toLowerCase()))
