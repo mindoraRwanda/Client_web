@@ -7,10 +7,6 @@ import { Brain, Heart, Waves, PlayCircle, ThermometerSun, AlertCircle, Activity,
 import { XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, Area, AreaChart } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Animated components
-const AnimatedCard = motion(Card);
-const AnimatedButton = motion(Button);
-
 interface UserData {
   firstName: string;
   lastName: string;
@@ -20,7 +16,6 @@ interface UserData {
   id: string;
 }
 
-// Enhanced mock data with more data points
 const mockStressData = [
   { day: "Mon", level: 65, average: 50 },
   { day: "Tue", level: 58, average: 52 },
@@ -58,7 +53,6 @@ const quickExercises = [
   },
 ];
 
-// Mood Temperature Assessment Questions
 const questions = [
   {
     text: "How would you rate your stress level right now?",
@@ -102,7 +96,6 @@ const questions = [
   }
 ];
 
-// Daily wellbeing tips
 const wellbeingTips = [
   "Take a 5-minute break every hour to rest your eyes and stretch",
   "Stay hydrated throughout your workday for better focus",
@@ -117,38 +110,55 @@ export default function DashboardPage() {
   const [answers, setAnswers] = useState<number[]>([]);
   const [temperature, setTemperature] = useState(2.8);
   const [showTip, setShowTip] = useState(true);
-  const [dailyTip] = useState(wellbeingTips[Math.floor(Math.random() * wellbeingTips.length)]);
+  const [dailyTip, setDailyTip] = useState('');
   const [userName, setUserName] = useState('User');
   const [isLoading, setIsLoading] = useState(true);
+  const [lastMeasured, setLastMeasured] = useState('');
 
-  useEffect(()=>{
+  useEffect(() => {
     const fetchUserData = () => {
       try {
-        // Get token and check if it exists
         const token = localStorage.getItem('mindora_token');
         if (!token) {
-          // Redirect to login if no token found
           window.location.href = '/login';
           return;
         }
 
-        // Get user data from localStorage
         const userDataStr = localStorage.getItem('mindora_user');
         if (userDataStr) {
           const userData: UserData = JSON.parse(userDataStr);
-          // Set user's first name for display
           setUserName(userData.firstName || userData.username || 'User');
         }
+
+        const savedTemperature = localStorage.getItem('temperature');
+        if (savedTemperature) setTemperature(parseFloat(savedTemperature));
+
+        const savedLastMeasured = localStorage.getItem('lastMeasured');
+        if (savedLastMeasured) setLastMeasured(savedLastMeasured);
+
+        const hideTip = localStorage.getItem('hideTip');
+        setShowTip(!hideTip);
+
+        const storedTip = localStorage.getItem('dailyTip');
+        const storedDate = localStorage.getItem('dailyTipDate');
+        const today = new Date().toISOString().split('T')[0];
+        if (storedTip && storedDate === today) {
+          setDailyTip(storedTip);
+        } else {
+          const newTip = wellbeingTips[Math.floor(Math.random() * wellbeingTips.length)];
+          localStorage.setItem('dailyTip', newTip);
+          localStorage.setItem('dailyTipDate', today);
+          setDailyTip(newTip);
+        }
+
         setIsLoading(false);
       } catch (error) {
-        console.error('Error loading user data:', error);
+        console.error('Error loading dashboard:', error);
         setIsLoading(false);
       }
     }
-    fetchUserData();  
-
+    fetchUserData();
   }, []);
-
 
   const getTemperatureText = (temp: number) => {
     if (!temp) return "Not measured";
@@ -171,9 +181,13 @@ export default function DashboardPage() {
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
-      // Calculate temperature - average of all answers
       const avgScore = newAnswers.reduce((sum, score) => sum + score, 0) / newAnswers.length;
+      const measuredDate = new Date().toISOString();
+      
       setTemperature(avgScore);
+      setLastMeasured(measuredDate);
+      localStorage.setItem('temperature', avgScore.toString());
+      localStorage.setItem('lastMeasured', measuredDate);
       setShowAssessment(false);
     }
   };
@@ -185,7 +199,37 @@ export default function DashboardPage() {
     return "bg-gradient-to-br from-red-400 to-rose-300";
   };
 
-   if (isLoading) {
+  const formatTimeSince = (dateString: string) => {
+    if (!dateString) return 'Not measured yet';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    const intervals = {
+      year: 31536000,
+      month: 2592000,
+      day: 86400,
+      hour: 3600,
+      minute: 60
+    };
+
+    for (const [unit, secondsInUnit] of Object.entries(intervals)) {
+      const interval = seconds / secondsInUnit;
+      if (interval >= 1) {
+        return `${Math.floor(interval)} ${unit}${Math.floor(interval) === 1 ? '' : 's'} ago`;
+      }
+    }
+    
+    return 'Just now';
+  };
+
+  const handleDismissTip = () => {
+    setShowTip(false);
+    localStorage.setItem('hideTip', 'true');
+  };
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-purple-50 via-purple-50/50 to-white dark:from-slate-900 dark:via-slate-900/70 dark:to-slate-800">
         <div className="text-center">
@@ -199,7 +243,6 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8 p-6 pt-8 bg-gradient-to-b from-purple-50 via-purple-50/50 to-white min-h-screen dark:from-slate-900 dark:via-slate-900/70 dark:to-slate-800">
       <AnimatePresence mode="wait">
-        {/* Welcome Section with enhanced styling */}
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -214,7 +257,7 @@ export default function DashboardPage() {
               Track your wellness and maintain a healthy work balance
             </p>
           </div>
-          <AnimatedButton
+          <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white shadow-md rounded-full px-6 py-2 font-medium"
@@ -222,7 +265,7 @@ export default function DashboardPage() {
           >
             <span>Start Mood Check</span>
             <PlusCircle className="ml-2 h-4 w-4" />
-          </AnimatedButton>
+          </motion.button>
         </motion.div>
 
         {showAssessment ? (
@@ -233,7 +276,7 @@ export default function DashboardPage() {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.5 }}
           >
-            <AnimatedCard className="max-w-2xl mx-auto bg-white dark:bg-slate-800 shadow-xl rounded-2xl border-0">
+            <Card className="max-w-2xl mx-auto bg-white dark:bg-slate-800 shadow-xl rounded-2xl border-0">
               <CardHeader className="pb-4 border-b border-slate-100 dark:border-slate-700">
                 <div className="flex justify-between items-center">
                   <div>
@@ -260,12 +303,11 @@ export default function DashboardPage() {
                 </AnimatePresence>
                 <div className="grid gap-3">
                   {questions[currentQuestion].options.map((option, index) => (
-                    <AnimatedButton
+                    <motion.button
                       key={option.text}
                       whileHover={{ scale: 1.02, backgroundColor: "rgba(147, 51, 234, 0.05)" }}
                       whileTap={{ scale: 0.98 }}
-                      variant="outline"
-                      className="w-full justify-start text-left h-auto p-4 rounded-xl border-slate-200 dark:border-slate-700 hover:bg-purple-50 dark:hover:bg-slate-700 group transition-all"
+                      className="w-full justify-start text-left h-auto p-4 rounded-xl border-slate-200 dark:border-slate-700 hover:bg-purple-50 dark:hover:bg-slate-700 group transition-all border"
                       onClick={() => handleAnswer(option.score)}
                     >
                       <div className="flex items-center gap-3">
@@ -277,7 +319,7 @@ export default function DashboardPage() {
                         </span>
                       </div>
                       <ChevronRight className="ml-auto h-5 w-5 text-slate-400 group-hover:text-purple-500 dark:text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </AnimatedButton>
+                    </motion.button>
                   ))}
                 </div>
                 <div className="space-y-2 pt-4">
@@ -291,7 +333,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </CardContent>
-            </AnimatedCard>
+            </Card>
           </motion.div>
         ) : (
           <motion.div
@@ -302,13 +344,8 @@ export default function DashboardPage() {
             transition={{ duration: 0.5 }}
             className="space-y-8"
           >
-            {/* Temperature and Stats Overview */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              <AnimatedCard 
-                whileHover={{ y: -5, boxShadow: "0 10px 30px -15px rgba(0, 0, 0, 0.1)" }}
-                transition={{ duration: 0.2 }}
-                className="col-span-2 bg-white dark:bg-slate-800 shadow-lg rounded-xl border-0"
-              >
+              <Card className="col-span-2 bg-white dark:bg-slate-800 shadow-lg rounded-xl border-0">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-base font-medium text-slate-700 dark:text-slate-300">
                     Mood Temperature
@@ -330,8 +367,9 @@ export default function DashboardPage() {
                     </motion.div>
                     <div>
                       <div className="text-2xl font-bold text-slate-800 dark:text-slate-100">{getTemperatureText(temperature)}</div>
-                      <p className="text-sm text-muted-foreground">Last measured: 10 minutes ago</p>
-                      
+                      <p className="text-sm text-muted-foreground">
+                        Last measured: {formatTimeSince(lastMeasured)}
+                      </p>
                       <div className="mt-3">
                         <Button 
                           variant="ghost" 
@@ -346,13 +384,9 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </CardContent>
-              </AnimatedCard>
+              </Card>
 
-              <AnimatedCard 
-                whileHover={{ y: -5, boxShadow: "0 10px 30px -15px rgba(0, 0, 0, 0.1)" }}
-                transition={{ duration: 0.2 }}
-                className="bg-white dark:bg-slate-800 shadow-lg rounded-xl border-0"
-              >
+              <Card className="bg-white dark:bg-slate-800 shadow-lg rounded-xl border-0">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-base font-medium text-slate-700 dark:text-slate-300">
                     Focus Score
@@ -394,13 +428,9 @@ export default function DashboardPage() {
                     <p className="text-sm text-muted-foreground mt-3">Above average</p>
                   </div>
                 </CardContent>
-              </AnimatedCard>
+              </Card>
 
-              <AnimatedCard 
-                whileHover={{ y: -5, boxShadow: "0 10px 30px -15px rgba(0, 0, 0, 0.1)" }}
-                transition={{ duration: 0.2 }}
-                className="bg-white dark:bg-slate-800 shadow-lg rounded-xl border-0"
-              >
+              <Card className="bg-white dark:bg-slate-800 shadow-lg rounded-xl border-0">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-base font-medium text-slate-700 dark:text-slate-300">
                     Energy Level
@@ -422,16 +452,11 @@ export default function DashboardPage() {
                     <p className="text-sm text-muted-foreground">Consider a short break</p>
                   </div>
                 </CardContent>
-              </AnimatedCard>
+              </Card>
             </div>
 
-            {/* Charts and Quick Actions */}
             <div className="grid gap-6 md:grid-cols-7">
-              <AnimatedCard 
-                whileHover={{ y: -5, boxShadow: "0 10px 30px -15px rgba(0, 0, 0, 0.1)" }}
-                transition={{ duration: 0.2 }}
-                className="md:col-span-4 bg-white dark:bg-slate-800 shadow-lg rounded-xl border-0"
-              >
+              <Card className="md:col-span-4 bg-white dark:bg-slate-800 shadow-lg rounded-xl border-0">
                 <CardHeader>
                   <div className="flex justify-between items-center">
                     <div>
@@ -493,13 +518,9 @@ export default function DashboardPage() {
                     </ResponsiveContainer>
                   </div>
                 </CardContent>
-              </AnimatedCard>
+              </Card>
 
-              <AnimatedCard 
-                whileHover={{ y: -5, boxShadow: "0 10px 30px -15px rgba(0, 0, 0, 0.1)" }}
-                transition={{ duration: 0.2 }}
-                className="md:col-span-3 bg-white dark:bg-slate-800 shadow-lg rounded-xl border-0"
-              >
+              <Card className="md:col-span-3 bg-white dark:bg-slate-800 shadow-lg rounded-xl border-0">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold text-slate-800 dark:text-slate-100">Recommended Exercises</CardTitle>
                   <CardDescription className="text-slate-500 dark:text-slate-400">Based on your mood temperature</CardDescription>
@@ -541,10 +562,9 @@ export default function DashboardPage() {
                     })}
                   </div>
                 </CardContent>
-              </AnimatedCard>
+              </Card>
             </div>
 
-            {/* Wellness Tip Card */}
             <AnimatePresence>
               {showTip && (
                 <motion.div
@@ -552,7 +572,7 @@ export default function DashboardPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                 >
-                  <AnimatedCard className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 border-0 shadow-md rounded-xl">
+                  <Card className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 border-0 shadow-md rounded-xl">
                     <CardContent className="p-6">
                       <div className="flex items-start justify-between">
                         <div className="flex gap-4">
@@ -568,13 +588,13 @@ export default function DashboardPage() {
                           variant="ghost" 
                           size="icon" 
                           className="mt-1 rounded-full hover:bg-white/50 dark:hover:bg-slate-800/50"
-                          onClick={() => setShowTip(false)}
+                          onClick={handleDismissTip}
                         >
                           <X className="h-5 w-5 text-slate-500" />
                         </Button>
                       </div>
                     </CardContent>
-                  </AnimatedCard>
+                  </Card>
                 </motion.div>
               )}
             </AnimatePresence>
