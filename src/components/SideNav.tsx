@@ -7,7 +7,6 @@ import {
   BarChart,
   Brain,
   BookOpen,
-  Calendar,
   Settings,
   LogOut,
   User,
@@ -43,7 +42,6 @@ const navigationItems = [
   { name: 'Exercises', href: '/exercises', icon: Brain },
   { name: 'Journal', href: '/journal', icon: BookOpen },
   { name: 'Progress', href: '/progress', icon: BarChart },
-  { name: 'Calendar', href: '/calendar', icon: Calendar },
 ] as const;
 
 export function SideNav() {
